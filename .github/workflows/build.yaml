@@ -1,0 +1,120 @@
+name: Build
+
+on: push
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static:
+    strategy:
+      fail-fast: true
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Enable vcpkg downloads cache
+      uses: actions/cache@v4
+      with:
+        path: 'C:/vcpkg/downloads'
+        key: vcpkg_downloads_cache_v1
+
+    - name: Enable vcpkg installed cache
+      uses: actions/cache@v4
+      with:
+        path: 'C:/vcpkg/installed'
+        key: vcpkg_installed_cache_static_v1
+
+    - working-directory: 'C:/vcpkg'
+      run: git remote add openmw https://github.com/elsid/vcpkg.git
+
+    - working-directory: 'C:/vcpkg'
+      run: git fetch openmw
+
+    - working-directory: 'C:/vcpkg'
+      run: git checkout openmw/openmw
+
+    - working-directory: 'C:/vcpkg'
+      run: ./bootstrap-vcpkg.bat -disableMetrics
+
+    - name: Install vcpkg packages
+      run: >
+        vcpkg install --recurse --triplet x64-windows-static
+        boost-geometry
+        boost-iostreams
+        boost-locale
+        boost-program-options
+        bullet3[double-precision,multithreading]
+        icu
+        luajit
+        mygui[opengl]
+        openal-soft
+        openmw-osg
+
+    - name: Archive vcpkg installed packages
+      run: 7z a ${{ github.workspace }}/openmw-deps-vcpkg-x64-windows-static-${{ github.sha }}.7z 'C:/vcpkg/installed'
+
+    - name: Store archived vcpkg
+      uses: actions/upload-artifact@v4
+      with:
+        name: openmw-deps-vcpkg-x64-windows-static-${{ github.sha }}
+        path: ${{ github.workspace }}/openmw-deps-vcpkg-x64-windows-static-${{ github.sha }}.7z
+
+  dynamic:
+    strategy:
+      fail-fast: true
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Enable vcpkg downloads cache
+      uses: actions/cache@v4
+      with:
+        path: 'C:/vcpkg/downloads'
+        key: vcpkg_downloads_cache_v1
+
+    - name: Enable vcpkg installed cache
+      uses: actions/cache@v4
+      with:
+        path: 'C:/vcpkg/installed'
+        key: vcpkg_installed_cache_dynamic_v1
+
+    - working-directory: 'C:/vcpkg'
+      run: git remote add openmw https://github.com/elsid/vcpkg.git
+
+    - working-directory: 'C:/vcpkg'
+      run: git fetch openmw
+
+    - working-directory: 'C:/vcpkg'
+      run: git checkout openmw/openmw
+
+    - working-directory: 'C:/vcpkg'
+      run: ./bootstrap-vcpkg.bat -disableMetrics
+
+    - name: Install vcpkg packages
+      run: >
+        vcpkg install --recurse --triplet x64-windows
+        boost-geometry
+        boost-iostreams
+        boost-locale
+        boost-program-options
+        bullet3[double-precision,multithreading]
+        icu
+        luajit
+        mygui[opengl]
+        openal-soft
+        openmw-osg
+
+    - name: Archive vcpkg installed packages
+      run: 7z a ${{ github.workspace }}/openmw-deps-vcpkg-x64-windows-${{ github.sha }}.7z 'C:/vcpkg/installed'
+
+    - name: Store archived vcpkg
+      uses: actions/upload-artifact@v4
+      with:
+        name: openmw-deps-vcpkg-x64-windows-${{ github.sha }}
+        path: ${{ github.workspace }}/openmw-deps-vcpkg-x64-windows-${{ github.sha }}.7z
