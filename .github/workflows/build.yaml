@@ -1,0 +1,129 @@
+name: Build
+
+on: push
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env: 
+  VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+
+jobs:
+  static:
+    strategy:
+      fail-fast: true
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Export GitHub Actions cache environment variables
+      uses: actions/github-script@v6
+      with:
+        script: |
+          core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+          core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
+    - working-directory: 'C:/vcpkg'
+      run: git remote add openmw https://github.com/elsid/vcpkg.git
+
+    - working-directory: 'C:/vcpkg'
+      run: git fetch openmw
+
+    - working-directory: 'C:/vcpkg'
+      run: git checkout openmw/openmw
+
+    - working-directory: 'C:/vcpkg'
+      run: ./bootstrap-vcpkg.bat -disableMetrics
+
+    - name: Install vcpkg packages
+      run: >
+        vcpkg install --triplet x64-windows-static
+        boost-geometry
+        boost-iostreams
+        boost-locale
+        boost-program-options
+        bullet3[double-precision,multithreading]
+        freetype
+        icu
+        luajit
+        lz4
+        mygui[opengl]
+        openal-soft
+        openmw-osg
+        sdl2
+
+    - name: Export installed vcpkg packages
+      run: >
+        vcpkg export
+        --x-all-installed
+        --7zip
+        --output-dir ${{ github.workspace }}
+        --output openmw-deps-vcpkg-x64-windows-static-${{ github.sha }}
+
+    - name: Store exported vcpkg packages
+      uses: actions/upload-artifact@v4
+      with:
+        name: openmw-deps-vcpkg-x64-windows-static-${{ github.sha }}
+        path: ${{ github.workspace }}/openmw-deps-vcpkg-x64-windows-static-${{ github.sha }}.7z
+
+  dynamic:
+    strategy:
+      fail-fast: true
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Export GitHub Actions cache environment variables
+      uses: actions/github-script@v6
+      with:
+        script: |
+          core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+          core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
+    - working-directory: 'C:/vcpkg'
+      run: git remote add openmw https://github.com/elsid/vcpkg.git
+
+    - working-directory: 'C:/vcpkg'
+      run: git fetch openmw
+
+    - working-directory: 'C:/vcpkg'
+      run: git checkout openmw/openmw
+
+    - working-directory: 'C:/vcpkg'
+      run: ./bootstrap-vcpkg.bat -disableMetrics
+
+    - name: Install vcpkg packages
+      run: >
+        vcpkg install --triplet x64-windows
+        boost-geometry
+        boost-iostreams
+        boost-locale
+        boost-program-options
+        bullet3[double-precision,multithreading]
+        freetype
+        icu
+        luajit
+        lz4
+        mygui[opengl]
+        openal-soft
+        openmw-osg
+        sdl2
+
+    - name: Export installed vcpkg packages
+      run: >
+        vcpkg export
+        --x-all-installed
+        --7zip
+        --output-dir ${{ github.workspace }}
+        --output openmw-deps-vcpkg-x64-windows-${{ github.sha }}
+
+    - name: Store exported vcpkg packages
+      uses: actions/upload-artifact@v4
+      with:
+        name: openmw-deps-vcpkg-x64-windows-${{ github.sha }}
+        path: ${{ github.workspace }}/openmw-deps-vcpkg-x64-windows-${{ github.sha }}.7z
