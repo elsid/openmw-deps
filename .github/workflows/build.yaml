@@ -63,6 +63,63 @@ jobs:
         name: openmw-deps-vcpkg-x64-windows-static-${{ github.sha }}
         path: ${{ github.workspace }}/openmw-deps-vcpkg-x64-windows-static-${{ github.sha }}.7z
 
+    - run: dir 'C:/vcpkg/installed/x64-windows-static'
+
+    - run: dir 'C:/vcpkg/installed/x64-windows-static/lib'
+
+    - run: dir 'C:/vcpkg/installed/x64-windows-static/include'
+
+    - run: mkdir -p ${{ github.workspace }}/Qt/6.7.0/msvc2019_64
+
+    - working-directory: ${{ github.workspace }}/Qt/6.7.0/msvc2019_64
+      run: curl --fail --retry 3 -L -o aqt_x64.exe https://github.com/miurahr/aqtinstall/releases/download/v3.1.12/aqt_x64.exe
+
+    - working-directory: ${{ github.workspace }}/Qt/6.7.0/msvc2019_64
+      run: .\aqt_x64.exe install-qt windows desktop 6.7.0 win64_msvc2019_64
+
+    - uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Configure
+      run: >
+        cmake
+        -G Ninja
+        -B ${{ github.workspace }}/build
+        -D CMAKE_BUILD_TYPE=Release
+        -D CMAKE_TOOLCHAIN_FILE='C:/vcpkg/scripts/buildsystems/vcpkg.cmake'
+        -D CMAKE_INSTALL_PREFIX=${{ github.workspace }}/build/install
+        -D BUILD_OPENMW=ON
+        -D BUILD_MWINIIMPORTER=ON
+        -D BUILD_OPENCS=ON
+        -D BUILD_LAUNCHER=ON
+        -D BUILD_ESSIMPORTER=ON
+        -D BUILD_WIZARD=ON
+        -D BUILD_BSATOOL=ON
+        -D BUILD_ESMTOOL=ON
+        -D BUILD_NIFTEST=ON
+        -D BUILD_NAVMESHTOOL=ON
+        -D BUILD_BULLETOBJECTTOOL=ON
+        -D BUILD_BENCHMARKS=ON
+        -D BUILD_UNITTESTS=ON
+        -D BUILD_OPENCS_TESTS=ON
+        -D OPENMW_USE_SYSTEM_SQLITE3=OFF
+        -D OPENMW_USE_SYSTEM_YAML_CPP=OFF
+        -D CMAKE_TOOLCHAIN_FILE='C:/vcpkg/scripts/buildsystems/vcpkg.cmake'
+        -D CMAKE_PREFIX_PATH='${{ github.workspace }}/Qt/6.7.0/msvc2019_64'
+        -D LuaJit_INCLUDE_DIR='C:/vcpkg/installed/x64-windows-static/include/luajit'
+        -D LuaJit_LIBRARY='C:/vcpkg/installed/x64-windows-static/lib/lua51.lib'
+
+    - name: Build
+      run: cmake --build ${{ github.workspace }}/build --parallel
+
+    - name: Install
+      run: cmake --install ${{ github.workspace }}/build
+
+    - name: Store build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: openmw-${{ github.sha }}
+        path: ${{ github.workspace }}/build/install
+
   dynamic:
     strategy:
       fail-fast: true
@@ -118,3 +175,62 @@ jobs:
       with:
         name: openmw-deps-vcpkg-x64-windows-${{ github.sha }}
         path: ${{ github.workspace }}/openmw-deps-vcpkg-x64-windows-${{ github.sha }}.7z
+
+    - run: dir 'C:/vcpkg/installed/x64-windows'
+
+    - run: dir 'C:/vcpkg/installed/x64-windows/lib'
+
+    - run: dir 'C:/vcpkg/installed/x64-windows/bin'
+
+    - run: dir 'C:/vcpkg/installed/x64-windows/include'
+
+    - run: mkdir -p ${{ github.workspace }}/Qt/6.7.0/msvc2019_64
+
+    - working-directory: ${{ github.workspace }}/Qt/6.7.0/msvc2019_64
+      run: curl --fail --retry 3 -L -o aqt_x64.exe https://github.com/miurahr/aqtinstall/releases/download/v3.1.12/aqt_x64.exe
+
+    - working-directory: ${{ github.workspace }}/Qt/6.7.0/msvc2019_64
+      run: .\aqt_x64.exe install-qt windows desktop 6.7.0 win64_msvc2019_64
+
+    - uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Configure
+      run: >
+        cmake
+        -G Ninja
+        -B ${{ github.workspace }}/build
+        -D CMAKE_BUILD_TYPE=Release
+        -D CMAKE_TOOLCHAIN_FILE='C:/vcpkg/scripts/buildsystems/vcpkg.cmake'
+        -D CMAKE_INSTALL_PREFIX=${{ github.workspace }}/build/install
+        -D BUILD_OPENMW=ON
+        -D BUILD_MWINIIMPORTER=ON
+        -D BUILD_OPENCS=ON
+        -D BUILD_LAUNCHER=ON
+        -D BUILD_ESSIMPORTER=ON
+        -D BUILD_WIZARD=ON
+        -D BUILD_BSATOOL=ON
+        -D BUILD_ESMTOOL=ON
+        -D BUILD_NIFTEST=ON
+        -D BUILD_NAVMESHTOOL=ON
+        -D BUILD_BULLETOBJECTTOOL=ON
+        -D BUILD_BENCHMARKS=ON
+        -D BUILD_UNITTESTS=ON
+        -D BUILD_OPENCS_TESTS=ON
+        -D OPENMW_USE_SYSTEM_SQLITE3=OFF
+        -D OPENMW_USE_SYSTEM_YAML_CPP=OFF
+        -D CMAKE_TOOLCHAIN_FILE='C:/vcpkg/scripts/buildsystems/vcpkg.cmake'
+        -D CMAKE_PREFIX_PATH='${{ github.workspace }}/Qt/6.7.0/msvc2019_64'
+        -D LuaJit_INCLUDE_DIR='C:/vcpkg/installed/x64-windows/include/luajit'
+        -D LuaJit_LIBRARY='C:/vcpkg/installed/x64-windows/lib/lua51.lib'
+
+    - name: Build
+      run: cmake --build ${{ github.workspace }}/build --parallel
+
+    - name: Install
+      run: cmake --install ${{ github.workspace }}/build
+
+    - name: Store build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: openmw-${{ github.sha }}
+        path: ${{ github.workspace }}/build/install
