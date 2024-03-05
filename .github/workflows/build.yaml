@@ -6,6 +6,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+env: 
+  VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+
 jobs:
   static:
     strategy:
@@ -16,17 +19,18 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Export GitHub Actions cache environment variables
+      uses: actions/github-script@v6
+      with:
+        script: |
+          core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+          core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
     - name: Enable vcpkg downloads cache
       uses: actions/cache@v4
       with:
         path: 'C:/vcpkg/downloads'
         key: vcpkg_downloads_cache_v1
-
-    - name: Enable vcpkg installed cache
-      uses: actions/cache@v4
-      with:
-        path: 'C:/vcpkg/installed'
-        key: vcpkg_installed_cache_static_v1
 
     - working-directory: 'C:/vcpkg'
       run: git remote add openmw https://github.com/elsid/vcpkg.git
@@ -129,17 +133,18 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Export GitHub Actions cache environment variables
+      uses: actions/github-script@v6
+      with:
+        script: |
+          core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+          core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
     - name: Enable vcpkg downloads cache
       uses: actions/cache@v4
       with:
         path: 'C:/vcpkg/downloads'
         key: vcpkg_downloads_cache_v1
-
-    - name: Enable vcpkg installed cache
-      uses: actions/cache@v4
-      with:
-        path: 'C:/vcpkg/installed'
-        key: vcpkg_installed_cache_dynamic_v1
 
     - working-directory: 'C:/vcpkg'
       run: git remote add openmw https://github.com/elsid/vcpkg.git
