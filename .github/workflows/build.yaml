@@ -71,7 +71,7 @@ jobs:
         path: ${{ github.workspace }}/openmw-deps-vcpkg-x64-windows-static-${{ github.sha }}.7z
 
     - name: Clone OpenMW repository
-      run: git clone https://gitlab.com/OpenMW/openmw.git ${{ github.workspace }}/openmw
+      run: git clone --branch fix_osg_utf8_build https://gitlab.com/elsid/openmw.git ${{ github.workspace }}/openmw
 
     - run: mkdir -p ${{ github.workspace }}/Qt
 
@@ -197,7 +197,7 @@ jobs:
         path: ${{ github.workspace }}/openmw-deps-vcpkg-x64-windows-${{ github.sha }}.7z
 
     - name: Clone OpenMW repository
-      run: git clone https://gitlab.com/OpenMW/openmw.git ${{ github.workspace }}/openmw
+      run: git clone --branch fix_osg_utf8_build https://gitlab.com/elsid/openmw.git ${{ github.workspace }}/openmw
 
     - run: mkdir -p ${{ github.workspace }}/Qt
 
